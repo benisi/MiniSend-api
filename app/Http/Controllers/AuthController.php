@@ -18,8 +18,8 @@ class AuthController extends BaseController
     {
         try {
             $credentials = $request->validated();
-            if (Auth::attempt($credentials)) {
-                return response(__('login was successful'), Response::HTTP_OK);
+            if ($token = Auth::attempt($credentials)) {
+                return response(['token' => $token], Response::HTTP_OK);
             } else {
                 return response(__('invalid credentials'), Response::HTTP_UNAUTHORIZED);
             }
