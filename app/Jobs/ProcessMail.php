@@ -14,6 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail as FacadesMail;
+use Swift_TransportException;
 
 class ProcessMail implements ShouldQueue
 {
@@ -21,8 +22,7 @@ class ProcessMail implements ShouldQueue
 
     public $mail;
     public $recipient;
-    public $tries = 3;
-    public $backoff = [60, 120];
+    public $maxExceptions = 2;
 
     /**
      * Create a new job instance.
@@ -42,7 +42,12 @@ class ProcessMail implements ShouldQueue
      */
     public function handle()
     {
-        FacadesMail::to($this->recipient->email)->send(new Mailer($this->mail, $this->recipient));
+        try {
+            FacadesMail::to($this->recipient->email)->send(new Mailer($this->mail, $this->recipient));
+        } catch(Swift_TransportException $e){
+            return $this->release(60);
+            Log::error($e->getMessage());
+        }
         DB::transaction(function () {
             $this->recipient->status = MailRecipient::STATUS_SENT;
             $this->recipient->save();

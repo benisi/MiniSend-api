@@ -19,7 +19,8 @@ class Mail extends Model
         'subject',
         'recipient_count',
         'pending_mail',
-        'text'
+        'text',
+        'html'
     ];
 
     public function recipients()
