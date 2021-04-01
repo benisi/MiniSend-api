@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class Mail extends Model
 {
@@ -13,15 +14,7 @@ class Mail extends Model
     const STATUS_UNCOMPLETE = 'uncomplete';
     const STATUS_COMPLETED = 'completed';
 
-    protected $fillable = [
-        'sender_email',
-        'sender_name',
-        'subject',
-        'recipient_count',
-        'pending_mail',
-        'text',
-        'html'
-    ];
+    protected $guarded = [];
 
     public function recipients()
     {
@@ -36,7 +29,8 @@ class Mail extends Model
             'sender_name' => $request->from['name'],
             'subject' => $request->subject,
             'recipient_count' => $recipientCount,
-            'pending_mail' => $recipientCount
+            'pending_mail' => $recipientCount,
+            'user_id' => Auth::id()
         ];
 
         if ($request->text) {
@@ -72,5 +66,21 @@ class Mail extends Model
 
 
         return $recipients;
+    }
+
+    public static function fetch()
+    {
+        $query = MailRecipient::join('mails', 'mails.id', '=', 'mail_recipients.mail_id')
+            ->select('mail_recipients.*')
+            ->where('user_id', Auth::id());
+        $result = MailRecipient::appendQueryOptionsToRequest($query);
+
+        $counter = clone $result;
+
+        return [
+            'mail' => $result->get(),
+            'page' => request()->get('page') ?? MailRecipient::DEFAULT_PAGE,
+            'total' => $counter->count(),
+        ];
     }
 }

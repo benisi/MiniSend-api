@@ -21,6 +21,9 @@ class CreateMailRecipientsTable extends Migration
             $table->json('variables')->nullable();
             $table->string('email');
             $table->string('name');
+            $table->string('subject')->nullable();
+            $table->text('text')->nullable();
+            $table->text('html')->nullable();
             $table->string('status')->default(MailRecipient::STATUS_POSTED);
             $table->timestamps();
         });

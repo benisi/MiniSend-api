@@ -19,6 +19,7 @@ class CreateMailsTable extends Migration
             $table->string('sender_name');
             $table->string('sender_email');
             $table->string('subject');
+            $table->foreignId('user_id')->constrained();
             $table->text('text')->nullable();
             $table->text('html')->nullable();
             $table->json('attachments')->nullable();

@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Helpers\MessageParser;
 use App\Models\Mail;
 use App\Models\MailRecipient;
 use Illuminate\Bus\Queueable;
@@ -13,7 +12,9 @@ class Mailer extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $mail;
+    public $subject;
+    public $text;
+    public $html;
     public $recipient;
 
     /**
@@ -21,10 +22,12 @@ class Mailer extends Mailable
      *
      * @return void
      */
-    public function __construct(Mail $mail, MailRecipient $recipient)
+    public function __construct(MailRecipient $recipient, string $subject, $text, $html)
     {
-        $this->mail = $mail;
         $this->recipient = $recipient;
+        $this->subject = $subject;
+        $this->text = $text;
+        $this->html = $html;
     }
 
     /**
@@ -34,36 +37,14 @@ class Mailer extends Mailable
      */
     public function build()
     {
-        $message = "<div>{$this->getMessage()}</div>";
-        return $this->from($this->mail->sender_email, $this->mail->sender_name)
-            ->replyTo($this->mail->sender_email, $this->mail->sender_name)
-            ->subject($this->getSubject())
-            ->html($message);
-    }
-
-    private function getMessage()
-    {
-        $variables = $this->getVariables();
-        if ($this->mail->text) {
-            return MessageParser::substituteValues($this->mail->text, $variables);
+        $mail = $this->from($this->recipient->mail->sender_email, $this->recipient->mail->sender_name)
+            ->replyTo($this->recipient->mail->sender_email, $this->recipient->mail->sender_name)
+            ->subject($this->subject);
+        if ($mail->html) {
+            $mail->html($this->html);
+        } else {
+            $mail->text($this->text);
         }
-
-        if ($this->mail->html) {
-            return MessageParser::substituteValues($this->mail->html, $variables);
-        }
-    }
-
-    private function getSubject()
-    {
-        $variables = $this->getVariables();
-        return MessageParser::substituteValues($this->mail->subject, $variables);
-    }
-
-    private function getVariables(): array
-    {
-        if (!$this->recipient->variables) {
-            return [];
-        }
-        return $this->recipient->variables;
+        return $mail;
     }
 }

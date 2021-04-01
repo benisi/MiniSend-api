@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessMail;
 use App\Models\Mail;
+use App\Traits\SendApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -12,7 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EmailController extends Controller
 {
-    public function email(Request $request)
+    use SendApiResponse;
+
+    public function send(Request $request)
     {
 
         $validator = Validator::make($request->all(), [
@@ -47,5 +50,12 @@ class EmailController extends Controller
         });
 
         return response(['message' => __('email was queued')], Response::HTTP_ACCEPTED);
+    }
+
+    public function index(Request $request)
+    {
+
+        $data = Mail::fetch();
+        return $this->sendApiResponse(Response::HTTP_OK, __('email was fetched successfully'), $data);
     }
 }

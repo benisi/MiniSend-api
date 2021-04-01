@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Helpers\MessageParser;
 use App\Mail\Mailer;
 use App\Models\Mail;
 use App\Models\MailRecipient;
@@ -22,6 +23,7 @@ class ProcessMail implements ShouldQueue
 
     public $mail;
     public $recipient;
+    public $tries = 3;
     public $maxExceptions = 2;
 
     /**
@@ -43,10 +45,24 @@ class ProcessMail implements ShouldQueue
     public function handle()
     {
         try {
-            FacadesMail::to($this->recipient->email)->send(new Mailer($this->mail, $this->recipient));
-        } catch(Swift_TransportException $e){
-            return $this->release(60);
+            $subject = $this->getSubject();
+            $text = $this->getText();
+            $html = $this->getHtml();
+
+            $this->recipient->subject = $subject;
+            $this->recipient->text = $text;
+            $this->recipient->html = $html;
+            $this->recipient->save();
+
+            FacadesMail::to($this->recipient->email)->send(new Mailer(
+                $this->recipient,
+                $subject,
+                $text,
+                $html,
+            ));
+        } catch (Swift_TransportException $e) {
             Log::error($e->getMessage());
+            return $this->release(60);
         }
         DB::transaction(function () {
             $this->recipient->status = MailRecipient::STATUS_SENT;
@@ -58,6 +74,40 @@ class ProcessMail implements ShouldQueue
                 $this->mail->save();
             }
         });
+    }
+
+    private function getText()
+    {
+        $variables = $this->getVariables();
+        if ($this->mail->text) {
+            return MessageParser::substituteValues($this->mail->text, $variables);
+        }
+
+        return null;
+    }
+
+    private function getHtml()
+    {
+        $variables = $this->getVariables();
+
+        if ($this->mail->html) {
+            return MessageParser::substituteValues($this->mail->html, $variables);
+        }
+        return null;
+    }
+
+    private function getSubject()
+    {
+        $variables = $this->getVariables();
+        return MessageParser::substituteValues($this->mail->subject, $variables);
+    }
+
+    private function getVariables(): array
+    {
+        if (!$this->recipient->variables) {
+            return [];
+        }
+        return $this->recipient->variables;
     }
 
     public function failed(Exception $e)

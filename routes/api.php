@@ -16,9 +16,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('v1')->group(function () {
-    Route::post('/email', [EmailController::class, 'email']);
+Route::middleware(['guest'])->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+
+Route::prefix('v1')->middleware(['jwt.verify'])->group(function () {
+    Route::post('/email', [EmailController::class, 'send']);
+    Route::get('email', [EmailController::class, 'index']);
+});
