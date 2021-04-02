@@ -2,62 +2,65 @@
 
 namespace App\Models;
 
+use App\Helpers\MessageParser;
+use App\Traits\AppendQueryParameters;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class Mail extends Model
 {
     use HasFactory;
+    use AppendQueryParameters;
 
-    const STATUS_UNCOMPLETE = 'uncomplete';
-    const STATUS_COMPLETED = 'completed';
+    const STATUS_POSTED = 'posted';
+    const STATUS_SENT = 'sent';
+    const STATUS_FAILED = 'failed';
 
-    protected $fillable = [
-        'sender_email',
-        'sender_name',
-        'subject',
-        'recipient_count',
-        'pending_mail',
-        'text',
-        'html'
+    const DEFAULT_PAGE = 1;
+    const DEFAULT_PER_PAGE = 20;
+
+    protected $guarded = [];
+
+    public static $searchable = ['mails.sender_email', 'mails.email', 'mails.subject'];
+
+    public static $filterable = ['recipient_email' => 'email'];
+
+    public static $sortable = ['created_at' => 'created_at'];
+
+    protected $casts = [
+        'variables' => 'array',
     ];
 
-    public function recipients()
+    public function mail()
     {
-        return $this->hasMany(MailRecipient::class);
+        return $this->belongsTo(Mail::class);
     }
 
-    public static function processMailRequestData(Request $request): array
+    public static function fetch()
     {
-        $recipientCount = count($request->to);
-        $data = [
-            'sender_email' => $request->from['email'],
-            'sender_name' => $request->from['name'],
-            'subject' => $request->subject,
-            'recipient_count' => $recipientCount,
-            'pending_mail' => $recipientCount
+        $query = self::join('batches', 'batches.id', '=', 'mails.batch_id')
+            ->select('mails.*')
+            ->where('user_id', Auth::id());
+        $result = self::appendQueryOptionsToQuery($query);
+
+        $counter = clone $result;
+
+        return [
+            'mail' => $result->get(),
+            'page' => request()->get('page') ?? self::DEFAULT_PAGE,
+            'total' => $counter->count(),
         ];
-
-        if ($request->text) {
-            $data['text'] = $request->text;
-        }
-
-        if ($request->html) {
-            $data['html'] = $request->html;
-        }
-
-        if ($request->attachments) {
-            $data['attachments'] = $request->attachments;
-        }
-        return $data;
     }
 
     public static function processRecipientsData(Request $request)
     {
         $recipients = $request->to;
         $recipients = collect($recipients)->map(function ($recipient) use ($request) {
+
             $recipient['sender_email'] = $request->from['email'];
+            $recipient['variables'] = null;
             if ($request->variables) {
                 $found = collect($request->variables)->first(function ($var) use ($recipient) {
                     return $recipient['email'] === $var['email'];
@@ -67,10 +70,56 @@ class Mail extends Model
                 }
             }
 
+            $recipient['subject'] = self::getSubject($request->subject,  $recipient['variables']);
+            $recipient['text'] = self::getText($request->text,  $recipient['variables']);
+            $recipient['html'] = self::getHtml($request->html,  $recipient['variables']);
+
             return $recipient;
         });
 
 
         return $recipients;
+    }
+
+    private static function getText($text, $variables)
+    {
+        if ($text) {
+            $variables = self::getVariables($variables);
+            return MessageParser::substituteValues($text, $variables);
+        }
+
+        return null;
+    }
+
+    private static function getHtml($html, $variables)
+    {
+        if ($html) {
+            $variables = self::getVariables($variables);
+            return MessageParser::substituteValues($html, $variables);
+        }
+        return null;
+    }
+
+    private static function getSubject($subject, $variables)
+    {
+        $variables = Mail::getVariables($variables);
+        return MessageParser::substituteValues($subject, $variables);
+    }
+
+    private static function getVariables($variables): array
+    {
+        if (!$variables) {
+            return [];
+        }
+        return $variables;
+    }
+
+    public static function showSingleMail(int $id)
+    {
+
+        return Mail::join('batches', 'batches.id', '=', 'mails.batch_id')
+            ->select('mails.*')
+            ->where('mails.id', $id)
+            ->where('batches.user_id', Auth::id())->first();
     }
 }
