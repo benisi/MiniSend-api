@@ -23,6 +23,7 @@ Route::middleware(['guest'])->group(function () {
 
 
 Route::prefix('v1')->middleware(['jwt.verify'])->group(function () {
-    Route::post('/email', [EmailController::class, 'send']);
+    Route::post('email', [EmailController::class, 'send']);
     Route::get('email', [EmailController::class, 'index']);
+    Route::get('email/{id}', [EmailController::class, 'show']);
 });

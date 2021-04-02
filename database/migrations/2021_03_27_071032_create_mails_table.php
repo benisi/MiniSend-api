@@ -16,16 +16,15 @@ class CreateMailsTable extends Migration
     {
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
-            $table->string('sender_name');
+            $table->foreignId('batch_id')->constrained();
             $table->string('sender_email');
-            $table->string('subject');
-            $table->foreignId('user_id')->constrained();
+            $table->json('variables')->nullable();
+            $table->string('email');
+            $table->string('name');
+            $table->string('subject')->nullable();
             $table->text('text')->nullable();
             $table->text('html')->nullable();
-            $table->json('attachments')->nullable();
-            $table->string('status')->default(Mail::STATUS_UNCOMPLETE);
-            $table->integer('recipient_count');
-            $table->integer('pending_mail');
+            $table->string('status')->default(Mail::STATUS_POSTED);
             $table->timestamps();
         });
     }

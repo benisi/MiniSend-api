@@ -2,9 +2,11 @@
 
 namespace App\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
+
 trait AppendQueryParameters
 {
-    public static function appendFilterCriteria($query)
+    public static function appendFilterCriteria(Builder $query)
     {
         $filterable = static::$filterable;
         if (isset($filterable)) {
@@ -22,7 +24,7 @@ trait AppendQueryParameters
         return $query;
     }
 
-    public static function appendPagingCriteria($query)
+    public static function appendPagingCriteria(Builder $query)
     {
         $page = request()->get('page') ?? static::DEFAULT_PAGE;
         $perPage = request()->get('per_page') ?? static::DEFAULT_PER_PAGE;
@@ -32,7 +34,7 @@ trait AppendQueryParameters
         return $query;
     }
 
-    public static function appendSearchCriteria($query)
+    public static function appendSearchCriteria(Builder $query)
     {
         $search = request()->get('search');
         if ($search) {
@@ -46,11 +48,32 @@ trait AppendQueryParameters
         return $query;
     }
 
-    public static function appendQueryOptionsToRequest($query)
+    public static function appendSortCriteria(Builder $query)
+    {
+        $sortQuery = request()->get('sort');
+        $sortQuery = !is_array($sortQuery) ? [] : $sortQuery;
+        $sortQueryKeys = array_keys($sortQuery);
+        $sortable = self::$sortable;
+        $allowDirection = ['desc' => 'desc', 'asc' => 'asc'];
+        if (is_array($sortQuery) && in_array('field', $sortQueryKeys) & in_array('direction', $sortQueryKeys)) {
+            if (in_array($sortQuery['field'], array_keys($sortable))) {
+                $direction = 'asc';
+                if (in_array($sortQuery['direction'], array_keys($allowDirection))) {
+                    $direction = $sortQuery['direction'];
+                }
+
+                $query->orderBy($sortQuery['field'], $direction);
+            }
+        }
+        return $query;
+    }
+
+    public static function appendQueryOptionsToQuery(Builder $query)
     {
         $query = static::appendFilterCriteria($query);
         $query = static::appendPagingCriteria($query);
         $query = static::appendSearchCriteria($query);
+        $query = static::appendSortCriteria($query);
         return $query;
     }
 }

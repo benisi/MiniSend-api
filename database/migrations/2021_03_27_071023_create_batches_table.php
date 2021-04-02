@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\MailRecipient;
+use App\Models\Batch;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMailRecipientsTable extends Migration
+class CreateBatchesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,17 +14,18 @@ class CreateMailRecipientsTable extends Migration
      */
     public function up()
     {
-        Schema::create('mail_recipients', function (Blueprint $table) {
+        Schema::create('batches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mail_id')->constrained();
+            $table->string('sender_name');
             $table->string('sender_email');
-            $table->json('variables')->nullable();
-            $table->string('email');
-            $table->string('name');
-            $table->string('subject')->nullable();
+            $table->string('subject');
+            $table->foreignId('user_id')->constrained();
             $table->text('text')->nullable();
             $table->text('html')->nullable();
-            $table->string('status')->default(MailRecipient::STATUS_POSTED);
+            $table->json('attachments')->nullable();
+            $table->string('status')->default(Batch::STATUS_UNCOMPLETE);
+            $table->integer('recipient_count');
+            $table->integer('pending_mail');
             $table->timestamps();
         });
     }
@@ -36,6 +37,6 @@ class CreateMailRecipientsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mail_recipients');
+        Schema::dropIfExists('batches');
     }
 }

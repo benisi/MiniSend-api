@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Models\Mail;
-use App\Models\MailRecipient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -12,22 +11,16 @@ class Mailer extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $subject;
-    public $text;
-    public $html;
-    public $recipient;
+    public $mail;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(MailRecipient $recipient, string $subject, $text, $html)
+    public function __construct(Mail $mail)
     {
-        $this->recipient = $recipient;
-        $this->subject = $subject;
-        $this->text = $text;
-        $this->html = $html;
+        $this->mail = $mail;
     }
 
     /**
@@ -37,13 +30,13 @@ class Mailer extends Mailable
      */
     public function build()
     {
-        $mail = $this->from($this->recipient->mail->sender_email, $this->recipient->mail->sender_name)
-            ->replyTo($this->recipient->mail->sender_email, $this->recipient->mail->sender_name)
-            ->subject($this->subject);
-        if ($mail->html) {
-            $mail->html($this->html);
+        $mail = $this->from($this->mail->batch->sender_email, $this->mail->batch->sender_name)
+            ->replyTo($this->mail->batch->sender_email, $this->mail->batch->sender_name)
+            ->subject($this->mail->subject);
+        if ($this->mail->html) {
+            $mail->html($this->mail->html);
         } else {
-            $mail->text($this->text);
+            $mail->text($this->mail->text);
         }
         return $mail;
     }
