@@ -39,7 +39,7 @@ class EmailController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response(['message' => __('Validation error'), 'data' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+                return $this->sendApiResponse(Response::HTTP_UNPROCESSABLE_ENTITY, __('Validation error'), null, $validator->errors());
             }
 
             $data = Batch::processMailRequestData($request);
@@ -52,7 +52,7 @@ class EmailController extends Controller
                 ProcessMail::dispatch($batch, $recipient);
             });
 
-            return response(['message' => __('email was queued')], Response::HTTP_ACCEPTED);
+            return $this->sendApiResponse(Response::HTTP_ACCEPTED, __('email was queued'));
         } catch (Throwable $e) {
             return $this->sendApiResponse(Response::HTTP_INTERNAL_SERVER_ERROR, __('something went wrong'));
         }
