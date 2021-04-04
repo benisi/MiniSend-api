@@ -23,25 +23,25 @@ class Mail extends Model
 
     protected $guarded = [];
 
-    public static $searchable = ['mails.sender_email', 'mails.email', 'mails.subject'];
+    public static $searchable = ['mails.sender_email', 'mails.email', 'mails.subject', 'mails.name', 'batches.sender_name'];
 
     public static $filterable = ['recipient_email' => 'email'];
 
-    public static $sortable = ['created_at' => 'created_at'];
+    public static $sortable = ['created_at' => 'created_at', 'status' => 'mails.status', 'sender_email' => 'mails.sender_email', 'sender_name' => 'batches.sender_name', 'email' => 'mails.email'];
 
     protected $casts = [
         'variables' => 'array',
     ];
 
-    public function mail()
+    public function batch()
     {
-        return $this->belongsTo(Mail::class);
+        return $this->belongsTo(Batch::class);
     }
 
     public static function fetch()
     {
         $query = self::join('batches', 'batches.id', '=', 'mails.batch_id')
-            ->select('mails.*')
+            ->select('mails.*', 'batches.sender_name')
             ->where('user_id', Auth::id());
         $result = self::appendQueryOptionsToQuery($query);
 
@@ -118,7 +118,7 @@ class Mail extends Model
     {
 
         return Mail::join('batches', 'batches.id', '=', 'mails.batch_id')
-            ->select('mails.*')
+            ->select('mails.*', 'batches.sender_name')
             ->where('mails.id', $id)
             ->where('batches.user_id', Auth::id())->first();
     }

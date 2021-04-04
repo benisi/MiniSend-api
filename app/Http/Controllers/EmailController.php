@@ -46,9 +46,9 @@ class EmailController extends Controller
             $recipients = Mail::processRecipientsData($request);
 
             $batch = Batch::create($data);
-            $batch->recipients()->createMany($recipients);
+            $batch->mails()->createMany($recipients);
 
-            $batch->recipients->each(function ($recipient) use ($batch) {
+            $batch->mails->each(function ($recipient) use ($batch) {
                 ProcessMail::dispatch($batch, $recipient);
             });
 

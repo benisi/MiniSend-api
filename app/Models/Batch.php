@@ -16,7 +16,7 @@ class Batch extends Model
 
     protected $guarded = [];
 
-    public function recipients()
+    public function mails()
     {
         return $this->hasMany(Mail::class);
     }
