@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\AppendQueryParameters;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -10,9 +11,26 @@ use Illuminate\Support\Facades\Auth;
 class Batch extends Model
 {
     use HasFactory;
+    use AppendQueryParameters;
 
     const STATUS_UNCOMPLETE = 'uncomplete';
     const STATUS_COMPLETED = 'completed';
+
+    const DEFAULT_PAGE = 1;
+    const DEFAULT_PER_PAGE = 20;
+
+    public static $searchable = ['sender_email', 'sender_name'];
+
+    public static $filterable = [];
+
+    public static $sortable = [
+        'created_at' => 'created_at',
+        'status' => 'status',
+        'sender_email' => 'sender_email',
+        'sender_name' => 'sender_name',
+        'recipient_count' => 'recipient_count',
+        'pending_mail' => 'pending_mail'
+    ];
 
     protected $guarded = [];
 
@@ -45,5 +63,19 @@ class Batch extends Model
             $data['attachments'] = $request->attachments;
         }
         return $data;
+    }
+
+    public static function fetch()
+    {
+        $query = self::where('user_id', Auth::id());
+        $result = self::appendQueryOptionsToQuery($query);
+
+        $counter = clone $result;
+
+        return [
+            'batch' => $result->get(),
+            'page' => request()->get('page') ?? self::DEFAULT_PAGE,
+            'total' => $counter->count(),
+        ];
     }
 }

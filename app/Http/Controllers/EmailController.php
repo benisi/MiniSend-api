@@ -68,6 +68,16 @@ class EmailController extends Controller
         }
     }
 
+    public function fetchBatch(Request $request)
+    {
+        try {
+            $data = Batch::fetch();
+            return $this->sendApiResponse(Response::HTTP_OK, __('batch was fetched successfully'), $data);
+        } catch (Throwable $e) {
+            return $this->sendApiResponse(Response::HTTP_INTERNAL_SERVER_ERROR, __('something went wrong'));
+        }
+    }
+
     public function show($id)
     {
         try {

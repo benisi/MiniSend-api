@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class Mail extends Model
 {
@@ -25,7 +26,7 @@ class Mail extends Model
 
     public static $searchable = ['mails.sender_email', 'mails.email', 'mails.subject', 'mails.name', 'batches.sender_name'];
 
-    public static $filterable = ['recipient_email' => 'email'];
+    public static $filterable = ['recipient_email' => 'email', 'batch_id' => 'mails.batch_id'];
 
     public static $sortable = ['created_at' => 'created_at', 'status' => 'mails.status', 'sender_email' => 'mails.sender_email', 'sender_name' => 'batches.sender_name', 'email' => 'mails.email'];
 
@@ -121,5 +122,23 @@ class Mail extends Model
             ->select('mails.*', 'batches.sender_name')
             ->where('mails.id', $id)
             ->where('batches.user_id', Auth::id())->first();
+    }
+
+    public static function getDashboardMailCount()
+    {
+        $mail = Mail::join('batches', 'batches.id', '=', 'mails.batch_id')
+            ->select(DB::raw('count(mails.id) as count, mails.status'))
+            ->groupBy('mails.status')
+            ->where('batches.user_id', Auth::id())->get();
+
+        $data = [];
+        $status = [Mail::STATUS_FAILED, Mail::STATUS_POSTED, Mail::STATUS_SENT];
+
+        collect($status)->each(function ($status) use ($mail, &$data) {
+            $found = $mail->firstWhere('status', $status);
+            $data[$status] = $found ? $found->count : 0;
+        });
+
+        return $data;
     }
 }
