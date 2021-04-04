@@ -29,4 +29,7 @@ Route::prefix('v1')->middleware(['jwt.verify'])->group(function () {
     Route::get('email/{id}', [EmailController::class, 'show']);
     Route::get('batch', [EmailController::class, 'fetchBatch']);
     Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::post('token', [AuthController::class, 'storeToken']);
+    Route::get('token', [AuthController::class, 'getTokens']);
+    Route::delete('token/{id}', [AuthController::class, 'deleteTokens']);
 });
