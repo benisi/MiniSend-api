@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\Mailer;
 use App\Models\Batch;
 use App\Models\Mail;
+use App\Models\Token;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -30,7 +31,13 @@ class EmailControllerTest extends TestCase
         MailFacades::assertNothingSent();
 
         $user = User::factory()->create();
-        $jwt = $this->getJwt($user);
+        $jwt = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $jwt,
+            'user_id' => $user->id
+        ]);
 
         $this->postJson(self::EMAIL_URL, $data, ['Authorization' => "Bearer {$jwt}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
@@ -83,7 +90,14 @@ class EmailControllerTest extends TestCase
         MailFacades::assertNothingSent();
 
         $user = User::factory()->create();
-        $jwt = $this->getJwt($user);
+        $jwt = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $jwt,
+            'user_id' => $user->id
+        ]);
+
         $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
@@ -135,7 +149,13 @@ class EmailControllerTest extends TestCase
         MailFacades::assertNothingSent();
 
         $user = User::factory()->create();
-        $jwt = $this->getJwt($user);
+        $jwt = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $jwt,
+            'user_id' => $user->id
+        ]);
         $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
@@ -186,8 +206,14 @@ class EmailControllerTest extends TestCase
         MailFacades::fake();
         MailFacades::assertNothingSent();
         $user = User::factory()->create();
-        $jwt = $this->getJwt($user);
-        $response = $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"]);
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $response = $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"]);
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
@@ -209,8 +235,16 @@ class EmailControllerTest extends TestCase
         MailFacades::assertNothingSent();
 
         $user = User::factory()->create();
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $response = $this->getJson(self::EMAIL_URL, ['Authorization' => "Bearer {$jwt}"]);
@@ -229,7 +263,14 @@ class EmailControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $response = $this->getJson(self::EMAIL_URL . "?filters[recipient_email]=mark@doe.com", ['Authorization' => "Bearer {$jwt}"]);
@@ -255,7 +296,14 @@ class EmailControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $response = $this->getJson(self::EMAIL_URL . "?search=test@doe.com", ['Authorization' => "Bearer {$jwt}"]);
@@ -279,7 +327,15 @@ class EmailControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $mail = Mail::where('name', 'Mark doe')->first();
@@ -305,7 +361,14 @@ class EmailControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $mail = Mail::first();
@@ -324,7 +387,14 @@ class EmailControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $mail = Mail::first();

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Mail;
+use App\Models\Token;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail as FacadesMail;
@@ -27,7 +28,14 @@ class DashboardControllerTest extends TestCase
 
         $user = User::factory()->create();
         $jwt = $this->getJwt($user);
-        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"])
+        $token = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $token,
+            'user_id' => $user->id
+        ]);
+        $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$token}"])
             ->assertStatus(Response::HTTP_ACCEPTED);
 
         $mail = Mail::first();

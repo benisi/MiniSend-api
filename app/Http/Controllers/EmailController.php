@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Jobs\ProcessMail;
 use App\Models\Batch;
 use App\Models\Mail;
+use App\Models\Token;
 use App\Traits\SendApiResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +23,12 @@ class EmailController extends Controller
     public function send(Request $request)
     {
         try {
+            $token = Token::getFromRequest();
+
+            if (!$token) {
+                return $this->sendApiResponse(Response::HTTP_UNAUTHORIZED, __('unauthorized'));
+            }
+
             $validator = Validator::make($request->all(), [
                 'from' => 'required|array',
                 'from.email' => 'required|email',
@@ -41,6 +49,8 @@ class EmailController extends Controller
             if ($validator->fails()) {
                 return $this->sendApiResponse(Response::HTTP_UNPROCESSABLE_ENTITY, __('Validation error'), null, $validator->errors());
             }
+
+            Auth::login($token->user);
 
             $data = Batch::processMailRequestData($request);
             $recipients = Mail::processRecipientsData($request);
