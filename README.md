@@ -40,6 +40,12 @@ php artisan queue:work
 ```
 vendor/bin/phpunit --testdox
 ```
+
+### To send a mail, create an api token 
+
+![image](https://user-images.githubusercontent.com/47527863/113569231-09039080-960a-11eb-9339-a4e668de3193.png)
+
+
 ### Send a POST request to http://{your local address}/api/v1/email with the payload
 
 ```
