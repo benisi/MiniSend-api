@@ -41,7 +41,7 @@ class Mailer extends Mailable
 
         if ($this->mail->batch->attachments) {
             foreach ($this->mail->batch->attachments as $attachment) {
-                $mailer->attachData($attachment['content'], $attachment['filename']);
+                $mailer->attachData(base64_decode($attachment['content']), $attachment['filename']);
             }
         }
         return $mailer;
