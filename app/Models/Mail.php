@@ -119,7 +119,7 @@ class Mail extends Model
     {
 
         return Mail::join('batches', 'batches.id', '=', 'mails.batch_id')
-            ->select('mails.*', 'batches.sender_name')
+            ->select('mails.*', 'batches.sender_name', 'batches.attachments')
             ->where('mails.id', $id)
             ->where('batches.user_id', Auth::id())->first();
     }

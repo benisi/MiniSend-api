@@ -19,6 +19,10 @@ class Batch extends Model
     const DEFAULT_PAGE = 1;
     const DEFAULT_PER_PAGE = 20;
 
+    protected $casts = [
+        'attachments' => 'array',
+    ];
+
     public static $searchable = ['sender_email', 'sender_name'];
 
     public static $filterable = [];

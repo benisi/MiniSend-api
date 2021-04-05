@@ -199,6 +199,83 @@ class EmailControllerTest extends TestCase
         ]);
     }
 
+    public function test_can_send_email_with_attachment()
+    {
+        $data = EmailRequestData::getRequestDataWithAttachment();
+
+        MailFacades::fake();
+        MailFacades::assertNothingSent();
+
+        $user = User::factory()->create();
+        $jwt = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $jwt,
+            'user_id' => $user->id
+        ]);
+        $response = $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"]);
+        $response->assertStatus(Response::HTTP_ACCEPTED);
+
+        MailFacades::assertSent(Mailer::class, 2);
+        MailFacades::assertSent(Mailer::class, function ($mail) {
+            return $mail->hasTo('test@doe.com');
+        });
+
+        MailFacades::assertSent(Mailer::class, function ($mail) {
+            return $mail->hasTo('mark@doe.com');
+        });
+
+        $mail = Batch::first();
+
+        $this->assertDatabaseHas('batches', [
+            "sender_email" => 'bisidahomen@gmail.com',
+            "sender_name" => 'Benjamin Isidahomen',
+            "subject" => 'Hi from Benjamin',
+            "status" => Batch::STATUS_COMPLETED,
+            "text" => 'Benjamin is saying hi',
+            'pending_mail' => 0,
+            'user_id' => $user->id
+        ]);
+
+        $this->assertDatabaseHas('mails', [
+            'batch_id' => $mail->id,
+            'sender_email' => 'bisidahomen@gmail.com',
+            "email" => "test@doe.com",
+            "name" => "John doe",
+            "subject" => 'Hi from Benjamin',
+            "status" => Mail::STATUS_SENT
+        ]);
+
+        $this->assertDatabaseHas('mails', [
+            'batch_id' => $mail->id,
+            'sender_email' => 'bisidahomen@gmail.com',
+            "email" => "mark@doe.com",
+            "name" => "Mark doe",
+            "status" => Mail::STATUS_SENT
+        ]);
+    }
+
+    public function test_will_return_422_if_an_invalid_attachment_is_supplied()
+    {
+        $data = EmailRequestData::getRequestDataWithInvalidAttachment();
+
+        MailFacades::fake();
+        MailFacades::assertNothingSent();
+
+        $user = User::factory()->create();
+        $jwt = 'yeyyeebdb8348488484848484848484';
+
+        Token::create([
+            'name' => 'test',
+            'token' => $jwt,
+            'user_id' => $user->id
+        ]);
+        $response = $this->postJson(self::EMAIL_URL, $data,  ['Authorization' => "Bearer {$jwt}"]);
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+
     public function test_can_send_email_will_fail_when_supplied_invalid_payload()
     {
         $data = [];

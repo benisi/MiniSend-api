@@ -30,14 +30,20 @@ class Mailer extends Mailable
      */
     public function build()
     {
-        $mail = $this->from($this->mail->batch->sender_email, $this->mail->batch->sender_name)
+        $mailer = $this->from($this->mail->batch->sender_email, $this->mail->batch->sender_name)
             ->replyTo($this->mail->batch->sender_email, $this->mail->batch->sender_name)
             ->subject($this->mail->subject);
         if ($this->mail->html) {
-            $mail->html($this->mail->html);
+            $mailer->html($this->mail->html);
         } else {
-            $mail->text($this->mail->text);
+            $mailer->text($this->mail->text);
         }
-        return $mail;
+
+        if ($this->mail->batch->attachments) {
+            foreach ($this->mail->batch->attachments as $attachment) {
+                $mailer->attachData($attachment['content'], $attachment['filename']);
+            }
+        }
+        return $mailer;
     }
 }

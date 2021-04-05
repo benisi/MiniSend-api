@@ -43,8 +43,30 @@ class EmailController extends Controller
                 'variables.*.email' => 'required|email',
                 'variables.*.substitutions' => 'required|array|min:1',
                 'variables.*.substitutions.*.var' => 'required|string',
-                'variables.*.substitutions.*.value' => 'required|string'
+                'variables.*.substitutions.*.value' => 'required|string',
+                'attachments' => 'sometimes|required|array|min:1',
+                'attachments.*.filename' => 'required|string',
+                'attachments.*.content' => 'required|string'
             ]);
+
+            $validator->after(function ($validator) use ($request) {
+                if (is_array($request->attachments)) {
+                    $message = 'the following attachment(s) are invalid ';
+                    $thereWasAnError = false;
+                    foreach ($request->attachments as $attachment) {
+                        if (array_key_exists('filename', $attachment) && array_key_exists('content', $attachment)) {
+                            $isValid = base64_encode(base64_decode($attachment['content'], true)) === $attachment['content'];
+                            if (!$isValid) {
+                                $thereWasAnError = true;
+                                $message .= "{$attachment['filename']},";
+                            }
+                        }
+                    }
+                    if ($thereWasAnError) {
+                        $validator->errors()->add('attachment', substr($message, 0, strlen($message) - 1));
+                    }
+                }
+            });
 
             if ($validator->fails()) {
                 return $this->sendApiResponse(Response::HTTP_UNPROCESSABLE_ENTITY, __('Validation error'), null, $validator->errors());
