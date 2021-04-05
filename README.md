@@ -9,7 +9,7 @@ MiniSend is a cloud-based transactional email service that allows our customers 
 ```
 composer install
 ```
-### Create a .env file in the root directory from the .env.example file, add your database credentials
+### Create a .env file in the root directory from the .env.example file, add your database, mail driver and queue connection credentials
 ```
 DB_DATABASE=
 DB_USERNAME=
