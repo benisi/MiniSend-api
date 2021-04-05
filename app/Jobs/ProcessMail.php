@@ -22,7 +22,7 @@ class ProcessMail implements ShouldQueue
 
     public $batch;
     public $recipient;
-    public $tries = 3;
+    public $tries = 2;
     public $maxExceptions = 2;
 
     /**

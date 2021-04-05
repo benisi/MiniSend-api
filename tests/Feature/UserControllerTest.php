@@ -82,8 +82,10 @@ class UserControllerTest extends TestCase
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJson([
                 'data' => [
-                    'name' => 'Benjamin Isidahomen',
-                    'email' => 'bisidahomen@gmail.com'
+                    'user' => [
+                        'name' => 'Benjamin Isidahomen',
+                        'email' => 'bisidahomen@gmail.com'
+                    ]
                 ]
             ]);
     }
@@ -147,19 +149,19 @@ class UserControllerTest extends TestCase
                 ]
             ]);
 
-            $request = [
-                'name' => 'benjamin',
-                'email' => 123,
-                'password' => 'password',
-                'password_confirmation' => 'password'
-            ];
-    
-            $response = $this->postJson(self::REGISTER_URL, $request);
-            $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-                ->assertJson([
-                    'errors' => [
-                        'email' => ['The email must be a valid email address.'],
-                    ]
-                ]);
+        $request = [
+            'name' => 'benjamin',
+            'email' => 123,
+            'password' => 'password',
+            'password_confirmation' => 'password'
+        ];
+
+        $response = $this->postJson(self::REGISTER_URL, $request);
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJson([
+                'errors' => [
+                    'email' => ['The email must be a valid email address.'],
+                ]
+            ]);
     }
 }
