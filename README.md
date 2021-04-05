@@ -35,6 +35,11 @@ php artisan migrate
 php artisan serve
 php artisan queue:work
 ```
+
+### To run the test
+```
+vendor/bin/phpunit --testdox
+```
 ### Send a POST request to http://{your local address}/api/v1/email with the payload
 
 ```
