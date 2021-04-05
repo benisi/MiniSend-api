@@ -14,6 +14,13 @@ composer install
 DB_DATABASE=
 DB_USERNAME=
 DB_PASSWORD=
+
+// configure the mail driver of your choice (important!)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailgun.org
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
 ```
 
 ### Run all migrations
