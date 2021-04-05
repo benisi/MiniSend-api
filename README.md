@@ -21,6 +21,8 @@ MAIL_HOST=smtp.mailgun.org
 MAIL_PORT=587
 MAIL_USERNAME=
 MAIL_PASSWORD=
+
+QUEUE_CONNECTION=
 ```
 
 ### Run all migrations
@@ -33,3 +35,54 @@ php artisan migrate
 php artisan serve
 php artisan queue:work
 ```
+### Send a POST request to http://{your local address}/api/v1/email with the payload
+
+```
+{
+    "from": {
+        "email": "dad@doe.com",
+        "name": "father doe"
+    },
+    "to": [
+        {
+            "email": "john@doe.com",
+            "name": "John doe"
+        },
+        {
+            "email": "mark@doe.com",
+            "name": "Mark doe"
+        }
+    ],
+    "subject": "Hi from {$company}",
+    "text": "test",
+    "html": "<h1>{$company} is saying hi</h1><p>testing html with {$company}</p>",
+    "variables": [
+        {
+            "email": "john@doe.com,
+            "substitutions": [
+                {
+                    "var": "company",
+                    "value": "MiniSend"
+                }
+            ]
+        }
+    ],
+    "attachments" : [
+                {
+                    "filename" : "test.jpg",
+                    "content" : "base 64 file content"
+                }
+            ]
+}
+```
+### With Headers
+```
+Authorization: Bearer {generated token}
+Accept: application/json
+```
+
+### Note
+
+- attachments is optional
+- You can either send a text or an html not both
+- if you add a variable kindly provide it's substitution, if this is not done nothing will be substituted
