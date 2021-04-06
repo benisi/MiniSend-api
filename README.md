@@ -95,5 +95,5 @@ Accept: application/json
 ### Note
 
 - attachments is optional
-- You can either send a text or an html not both
+- You can either send a text or a html not both
 - if you add a variable kindly provide it's substitution, if this is not done nothing will be substituted
