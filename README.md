@@ -34,6 +34,7 @@ php artisan migrate
 ```
 php artisan serve
 php artisan queue:work
+php artisan jwt:secret
 ```
 
 ### To run the test
